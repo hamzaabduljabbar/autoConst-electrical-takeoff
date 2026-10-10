@@ -44,9 +44,10 @@ Drawing discrepancy flagged: CS02E1 on the plans x10, schedule lists CS02E (RFI)
 | `<p>-verify/*.png` | Crops of counted fixtures per type for spot checks |
 
 ### The drawing viewer
-- click a fixture type and every one of them lights up on the sheet
-- zoom straight to any fixture, step through them with the arrow keys
-- mark each one Correct (C) or Wrong (W) as you check; filter to just the flagged ones
+- pick a fixture type and every one of them gets a dot on the drawing
+- click a dot to zoom right in on that fixture; press -> for the next one
+- mark each one right (C) or wrong (W) as you check
+- show only the ones it wasn't sure about
 - copy the counts out as CSV into your estimate
 
 Open `examples/bliss-hall/viewer/index.html` to try it.
