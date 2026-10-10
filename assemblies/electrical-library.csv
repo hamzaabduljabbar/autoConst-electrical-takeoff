@@ -1,0 +1,29 @@
+assembly,match_keywords,primary_unit,item,qty_per_primary,unit,kind,note
+EXIT_SIGN,EXIT|#LQC|#METSU,EA,Exit sign (as scheduled),1,EA,material,
+EXIT_SIGN,EXIT|#LQC|#METSU,EA,Outlet box 4in square,1,EA,material,
+EXIT_SIGN,EXIT|#LQC|#METSU,EA,MC cable 12/2 home run allowance,8,m,material,PLACEHOLDER ratio - set your own
+EXIT_SIGN,EXIT|#LQC|#METSU,EA,Install exit sign,0.75,hr,labour,PLACEHOLDER ratio - set your own
+EMERGENCY,EMERGENCY|BATTERY|EGRESS,EA,Emergency light (as scheduled),1,EA,material,
+EMERGENCY,EMERGENCY|BATTERY|EGRESS,EA,MC cable 12/2 allowance,8,m,material,PLACEHOLDER ratio - set your own
+EMERGENCY,EMERGENCY|BATTERY|EGRESS,EA,Install emergency light,0.75,hr,labour,PLACEHOLDER ratio - set your own
+DOWNLIGHT,DOWNLIGHT|CYLINDER|WALLWASH\w*|CAN|#LDN,EA,Downlight (as scheduled),1,EA,material,
+DOWNLIGHT,DOWNLIGHT|CYLINDER|WALLWASH\w*|CAN|#LDN,EA,Flex whip 6ft,1,EA,material,
+DOWNLIGHT,DOWNLIGHT|CYLINDER|WALLWASH\w*|CAN|#LDN,EA,MC cable 12/2 allowance,6,m,material,PLACEHOLDER ratio - set your own
+DOWNLIGHT,DOWNLIGHT|CYLINDER|WALLWASH\w*|CAN|#LDN,EA,Install downlight,0.6,hr,labour,PLACEHOLDER ratio - set your own
+LINEAR,LINEAR|STRIP|SLOT|TAPE|#CLX|#FEM|#SL2L|#ARL|#MLHA|WETBPRO,EA,Linear luminaire (as scheduled),1,EA,material,count is per tagged run - verify units per run
+LINEAR,LINEAR|STRIP|SLOT|TAPE|#CLX|#FEM|#SL2L|#ARL|#MLHA|WETBPRO,EA,Suspension / mounting kit,1,EA,material,
+LINEAR,LINEAR|STRIP|SLOT|TAPE|#CLX|#FEM|#SL2L|#ARL|#MLHA|WETBPRO,EA,MC cable 12/2 allowance,8,m,material,PLACEHOLDER ratio - set your own
+LINEAR,LINEAR|STRIP|SLOT|TAPE|#CLX|#FEM|#SL2L|#ARL|#MLHA|WETBPRO,EA,Install linear luminaire,1.25,hr,labour,PLACEHOLDER ratio - set your own
+TROFFER,TROFFER|2X2|2X4|1X4|LAY-IN|FLAT PANEL|#CPX|#2?GTL|#22ID,EA,Troffer (as scheduled),1,EA,material,
+TROFFER,TROFFER|2X2|2X4|1X4|LAY-IN|FLAT PANEL|#CPX|#2?GTL|#22ID,EA,Flex whip 6ft,1,EA,material,
+TROFFER,TROFFER|2X2|2X4|1X4|LAY-IN|FLAT PANEL|#CPX|#2?GTL|#22ID,EA,Seismic/tie wire set,1,EA,material,
+TROFFER,TROFFER|2X2|2X4|1X4|LAY-IN|FLAT PANEL|#CPX|#2?GTL|#22ID,EA,Install troffer,0.75,hr,labour,PLACEHOLDER ratio - set your own
+EXTERIOR,EXTERIOR (?:LED|WALL|LUMINAIRE|SCONCE|POLE)|WALL PACK|#WDGE|#DSX|POLE[- ]MOUNTED|BOLLARD|FLOODLIGHT|FLOOD,EA,Exterior luminaire (as scheduled),1,EA,material,
+EXTERIOR,EXTERIOR (?:LED|WALL|LUMINAIRE|SCONCE|POLE)|WALL PACK|#WDGE|#DSX|POLE[- ]MOUNTED|BOLLARD|FLOODLIGHT|FLOOD,EA,Weatherproof box,1,EA,material,
+EXTERIOR,EXTERIOR (?:LED|WALL|LUMINAIRE|SCONCE|POLE)|WALL PACK|#WDGE|#DSX|POLE[- ]MOUNTED|BOLLARD|FLOODLIGHT|FLOOD,EA,Install exterior luminaire,1.5,hr,labour,PLACEHOLDER ratio - set your own
+PENDANT,PENDANT|SCONCE|DECORATIVE|GLOBE,EA,Luminaire (as scheduled),1,EA,material,
+PENDANT,PENDANT|SCONCE|DECORATIVE|GLOBE,EA,MC cable 12/2 allowance,6,m,material,PLACEHOLDER ratio - set your own
+PENDANT,PENDANT|SCONCE|DECORATIVE|GLOBE,EA,Install pendant/decorative luminaire,1.0,hr,labour,PLACEHOLDER ratio - set your own
+GENERAL,.*,EA,Luminaire (as scheduled),1,EA,material,no specific assembly matched - review
+GENERAL,.*,EA,MC cable 12/2 allowance,6,m,material,PLACEHOLDER ratio - set your own
+GENERAL,.*,EA,Install luminaire,0.75,hr,labour,PLACEHOLDER ratio - set your own

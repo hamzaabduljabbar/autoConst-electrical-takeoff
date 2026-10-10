@@ -1,0 +1,429 @@
+<title>Lighting Takeoff Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-screen review desk. Slim header with totals; BOQ ledger left; the sheet owns the rest, with a fixed toolbar above and a fixed-height inspector below so nothing jumps. */
+:root{
+  --paper:#eef1f0; --panel:#ffffff; --ink:#17222a; --muted:#61707a; --rule:#dce2e0; --hover:#f3f6f5;
+  --sel:#0e6a70; --sel-ink:#ffffff; --sel-soft:#e1f0ef;
+  --high:#2463c7; --med:#c97a0a; --low:#d2322d; --ok:#2f8a4c;
+  --sheet:#ffffff; --shadow:0 1px 2px rgba(20,30,35,.06),0 4px 14px rgba(20,30,35,.06);
+  --f-display:"Barlow Semi Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1518; --panel:#171f24; --ink:#e2e8eb; --muted:#91a0a8; --rule:#26333a; --hover:#1d272d;
+  --sel:#43b9bb; --sel-ink:#0f1518; --sel-soft:#173538; --high:#6fa4ff; --med:#f0a63a; --low:#ff6b62; --ok:#5ccf83;
+  --sheet:#f2f4f3; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1518; --panel:#171f24; --ink:#e2e8eb; --muted:#91a0a8; --rule:#26333a; --hover:#1d272d;
+  --sel:#43b9bb; --sel-ink:#0f1518; --sel-soft:#173538; --high:#6fa4ff; --med:#f0a63a; --low:#ff6b62; --ok:#5ccf83;
+  --sheet:#f2f4f3; --shadow:none; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 var(--f-body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px;padding-inline:16px;padding-block:12px}
+
+/* header */
+header{display:flex;align-items:center;gap:12px 28px;flex-wrap:wrap}
+.title{display:flex;flex-direction:column;min-width:0}
+h1{margin:0;font:700 21px/1.1 var(--f-display);letter-spacing:.01em}
+.sub{font:12px var(--f-mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.totals{display:flex;gap:22px;margin-left:auto;font-variant-numeric:tabular-nums}
+.tot{display:flex;flex-direction:column;align-items:flex-end}
+.tot b{font:700 20px/1 var(--f-display)} .tot span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+
+main{display:grid;grid-template-columns:340px minmax(0,1fr);gap:12px;min-height:0}
+
+/* ledger */
+.ledger{display:flex;flex-direction:column;min-height:0;background:var(--panel);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);overflow:hidden}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rule)}
+.tab{background:none;border:0;padding:11px 4px 9px;font:600 12px var(--f-display);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+.tab[aria-selected="true"]{color:var(--sel);border-bottom-color:var(--sel)}
+.tools{display:flex;gap:6px;padding:10px;border-bottom:1px solid var(--rule)}
+.search{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink);font:inherit}
+.list{overflow:auto;min-height:0;flex:1;overscroll-behavior:contain}
+.row{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:0 10px;align-items:center;width:100%;padding:8px 12px;border:0;border-bottom:1px solid var(--rule);background:none;text-align:left;cursor:pointer}
+.row:hover{background:var(--hover)}
+.row[aria-current="true"]{background:var(--sel-soft);box-shadow:inset 3px 0 0 var(--sel)}
+.mk{font:600 13px var(--f-mono)}
+.dsc{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q{font:700 16px var(--f-display);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.q i{font:400 11px var(--f-body);font-style:normal;color:var(--muted);margin-left:3px}
+.bar{grid-column:2/4;display:flex;height:4px;border-radius:2px;overflow:hidden;margin-top:6px;background:var(--rule)}
+.bar span{display:block;height:100%}
+.flag{grid-column:2/4;font-size:11.5px;color:var(--med);margin-top:4px;line-height:1.35}
+table.simple{width:100%;border-collapse:collapse;font-size:12.5px}
+table.simple td,table.simple th{padding:7px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+table.simple th{position:sticky;top:0;background:var(--panel);font:600 11px var(--f-display);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+table.simple td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ph{display:block;color:var(--med);font-size:11px}
+.foot{display:flex;gap:6px;align-items:center;padding:10px;border-top:1px solid var(--rule)}
+.foot .note{margin-left:auto;font-size:12px;color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;border:1px solid var(--rule);background:var(--panel);font:600 13px var(--f-display);letter-spacing:.03em;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--sel)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.icon{width:32px;padding:0;font-size:16px}
+:focus-visible{outline:2px solid var(--sel);outline-offset:1px}
+
+/* desk */
+.desk{display:grid;grid-template-rows:auto minmax(0,1fr) 64px;gap:8px;min-height:0;min-width:0}
+.toolbar{display:flex;align-items:center;gap:8px;min-width:0}
+.sheets{display:flex;gap:4px;overflow-x:auto;min-width:0;scrollbar-width:thin}
+.sh{flex:none;height:32px;padding:0 10px;border-radius:6px;border:1px solid var(--rule);background:var(--panel);font:600 12.5px var(--f-mono);cursor:pointer}
+.sh b{font-weight:400;color:var(--muted);margin-left:6px}
+.sh[aria-pressed="true"]{background:var(--sel);border-color:var(--sel);color:var(--sel-ink)}
+.sh[aria-pressed="true"] b{color:inherit;opacity:.75}
+.sh:disabled{opacity:.35;cursor:default}
+.seg{display:flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;flex:none}
+.seg button{height:30px;padding:0 9px;border:0;background:var(--panel);font:600 12px var(--f-display);letter-spacing:.04em;cursor:pointer;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--sel-soft);color:var(--ink)}
+.nav{display:flex;align-items:center;gap:6px;margin-left:auto;flex:none}
+.pos{min-width:62px;text-align:center;font:500 12.5px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+
+.stage{position:relative;overflow:hidden;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;touch-action:none;cursor:grab;user-select:none}
+.stage.drag{cursor:grabbing}
+.world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.world.anim{transition:transform .32s cubic-bezier(.2,.7,.2,1)}
+.world img{display:block;max-width:none;pointer-events:none}
+.world svg{position:absolute;left:0;top:0;overflow:visible}
+.m{cursor:pointer}
+.m .hit{fill:transparent}
+/* a dot that stays ~9px on screen at any zoom, so marks read on a whole dense sheet */
+.m .dot{r:calc(var(--inv,1) * 2.6px);stroke:none;opacity:.7}
+.m.HIGH .dot{fill:#2463c7} .m.MEDIUM .dot{fill:#d08000} .m.LOW .dot{fill:#d2322d} .m.ok .dot{fill:#2f8a4c}
+.m .r{fill:none;stroke-width:1.6;vector-effect:non-scaling-stroke}
+.m .bx{fill:none;stroke-width:1.4;vector-effect:non-scaling-stroke;stroke-dasharray:3 2}
+.m.HIGH .r,.m.HIGH .bx{stroke:#2463c7} .m.MEDIUM .r,.m.MEDIUM .bx{stroke:#d08000} .m.LOW .r,.m.LOW .bx{stroke:#d2322d}
+.m.ok .r{stroke:#2f8a4c} .m.bad .r{stroke:#d2322d;stroke-dasharray:4 3}
+.m:hover .r{stroke-width:2.6}
+.m.cur .r{stroke-width:3.2}
+.m.cur .halo{fill:rgba(255,196,0,.28);stroke:none}
+.m text{font:600 7px var(--f-mono);paint-order:stroke;stroke:#fff;stroke-width:2.4px;fill:#17222a;pointer-events:none}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:#61707a;font-size:13px;pointer-events:none}
+.zoomer{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px}
+.zoomer .btn{background:#ffffffee;color:#17222a;border-color:#d0d7d5}
+.keys{position:absolute;left:10px;bottom:8px;font-size:11px;color:#61707a;background:#ffffffd9;padding:2px 7px;border-radius:4px}
+
+.insp{display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--panel);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);min-width:0;overflow:hidden}
+.insp .id{font:600 15px var(--f-mono);white-space:nowrap}
+.pill{font:600 11px var(--f-display);letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.pill.HIGH{background:color-mix(in srgb,var(--high) 15%,transparent);color:var(--high)}
+.pill.MEDIUM{background:color-mix(in srgb,var(--med) 17%,transparent);color:var(--med)}
+.pill.LOW{background:color-mix(in srgb,var(--low) 15%,transparent);color:var(--low)}
+.insp .len{font:700 16px var(--f-display);white-space:nowrap}
+.insp .why{flex:1;min-width:0;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.btn.good[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.badb[aria-pressed="true"]{background:var(--low);border-color:var(--low);color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:13px;box-shadow:var(--shadow)}
+
+@media (max-width:900px){
+  .app{height:auto;min-height:100%}
+  main{grid-template-columns:1fr}
+  .ledger{max-height:46vh}
+  .desk{grid-template-rows:auto 64vh auto}
+  .insp{flex-wrap:wrap;padding:10px 12px;min-height:64px}
+  .totals{margin-left:0;gap:16px}
+  .keys{display:none}
+}
+@media (prefers-reduced-motion:reduce){.world.anim{transition:none}}
+</style>
+
+<div class="app">
+  <header>
+    <div class="title"><h1>Lighting takeoff</h1><span class="sub" id="sub"></span></div>
+    <div class="totals" id="totals"></div>
+  </header>
+  <main>
+    <section class="ledger" aria-label="Bill of quantities">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="t-fix" aria-selected="true">Fixtures</button>
+        <button class="tab" role="tab" id="t-der" aria-selected="false">Derived</button>
+        <button class="tab" role="tab" id="t-not" aria-selected="false">Not counted</button>
+      </div>
+      <div class="tools" id="tools"><input class="search" id="q" type="search" placeholder="Find a type" aria-label="Find a type"></div>
+      <div class="list" id="list"></div>
+      <div class="foot">
+        <button class="btn" id="copycsv">Copy CSV</button>
+        <button class="btn" id="copyrev">Copy review</button>
+        <span class="note" id="revnote"></span>
+      </div>
+    </section>
+    <section class="desk" aria-label="Drawing">
+      <div class="toolbar">
+        <div class="sheets" id="sheets"></div>
+        <div class="seg" id="filter" role="group" aria-label="Show">
+          <button data-f="all" aria-pressed="true">All</button><button data-f="check" aria-pressed="false">To check</button>
+        </div>
+        <div class="nav">
+          <button class="btn icon" id="prev" aria-label="Previous mark">‹</button>
+          <span class="pos" id="pos">–</span>
+          <button class="btn icon" id="next" aria-label="Next mark">›</button>
+        </div>
+      </div>
+      <div class="stage" id="stage">
+        <div class="world" id="world"><img id="img" alt="Drawing sheet"><svg id="svg" aria-hidden="true"></svg></div>
+        <div class="loading" id="loading">Loading sheet…</div>
+        <div class="zoomer">
+          <button class="btn icon" id="zin" aria-label="Zoom in">+</button>
+          <button class="btn icon" id="zout" aria-label="Zoom out">−</button>
+          <button class="btn icon" id="zfit" aria-label="Whole sheet">⤢</button>
+        </div>
+        <span class="keys">← → step · C correct · W wrong · F whole sheet</span>
+      </div>
+      <div class="insp" id="insp"></div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const D = /*__DATA__*/null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => n == null ? "" : Number(n).toLocaleString(undefined, {maximumFractionDigits: 1});
+const store = {get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const RKEY = "takeoff-review:" + D.title;
+let review = store.get(RKEY) || {};
+const byId = new Map(D.points.map(p => [p.id, p]));
+const S = {tab:"fix", type:null, sheet:null, filter:"all", cur:null, s:1, tx:0, ty:0};
+
+/* ---------- derived state ---------- */
+const inType = p => !S.type || p.mark === S.type;
+const inFilter = p => S.filter === "all" || p.confidence !== "HIGH";
+const visible = () => D.points.filter(p => p.sheet === S.sheet && inType(p) && inFilter(p));
+const countOn = sh => D.points.filter(p => p.sheet === sh && inType(p) && inFilter(p)).length;
+
+/* ---------- header + ledger ---------- */
+function header(){
+  $("sub").textContent = D.title + " · " + D.sheets.length + " sheets · " + D.sheets.map(s => s.sheet).join(" ");
+  const fx = D.boq.reduce((a,r) => a + r.count, 0), ft = D.boq.reduce((a,r) => a + (r.length_ft || 0), 0);
+  const med = D.points.filter(p => p.confidence === "MEDIUM").length, low = D.points.filter(p => p.confidence === "LOW").length;
+  $("totals").innerHTML = [[fx,"fixtures"],[fmt(ft),"ft linear"],[D.boq.length,"types"],[med,"medium","var(--med)"],[low,"to check","var(--low)"]]
+    .map(([v,l,c]) => `<div class="tot"><b${c?` style="color:${c}"`:""}>${v}</b><span>${l}</span></div>`).join("");
+}
+
+function confBar(r){
+  const t = r.high + r.medium + r.low || 1;
+  return `<span class="bar" title="${r.high} high · ${r.medium} medium · ${r.low} to check">
+    <span style="width:${100*r.high/t}%;background:var(--high)"></span><span style="width:${100*r.medium/t}%;background:var(--med)"></span><span style="width:${100*r.low/t}%;background:var(--low)"></span></span>`;
+}
+
+function ledger(){
+  const L = $("list");
+  $("tools").hidden = S.tab !== "fix";
+  if (S.tab === "der"){
+    L.innerHTML = `<table class="simple"><thead><tr><th>Item</th><th>Qty</th><th>Unit</th></tr></thead><tbody>` + D.derived.map(r =>
+      `<tr><td>${esc(r.item)}${r.note.startsWith("PLACEHOLDER") ? '<span class="ph">placeholder ratio, set your own</span>' : ""}</td><td class="n">${fmt(r.qty)}</td><td>${esc(r.unit)}</td></tr>`).join("") + `</tbody></table>`;
+    return;
+  }
+  if (S.tab === "not"){
+    L.innerHTML = `<table class="simple"><thead><tr><th>Label on plans</th><th>Seen</th><th>Why</th></tr></thead><tbody>` + D.not_counted.map(r =>
+      `<tr><td class="mk">${esc(r.label)}</td><td class="n">${r.tags}</td><td>${esc(r.why)}</td></tr>`).join("") + `</tbody></table>`;
+    return;
+  }
+  const q = $("q").value.trim().toLowerCase();
+  const rows = D.boq.slice().sort((a,b) => b.count - a.count).filter(r => !q || (r.mark + " " + r.description).toLowerCase().includes(q));
+  L.innerHTML = `<button class="row" data-m="" aria-current="${S.type === null}"><span class="mk">ALL</span><span class="dsc">Every type</span><span class="q">${D.points.length}<i>marks</i></span></button>` +
+    rows.map(r => {
+      const q = r.measure === "LENGTH" ? `${fmt(r.length_ft)}<i>ft</i>` : `${r.count}<i>ea</i>`;
+      return `<button class="row" data-m="${esc(r.mark)}" aria-current="${S.type === r.mark}" title="${esc(r.description)}">
+        <span class="mk">${esc(r.mark)}</span><span class="dsc">${esc(r.description)}</span><span class="q">${q}</span>
+        ${confBar(r)}${r.notes ? `<span class="flag">${esc(r.notes)}</span>` : ""}</button>`;
+    }).join("");
+}
+
+/* ---------- toolbar ---------- */
+function sheetsBar(){
+  $("sheets").innerHTML = D.sheets.map(s => {
+    const c = countOn(s.sheet);
+    return `<button class="sh" data-s="${esc(s.sheet)}" aria-pressed="${s.sheet === S.sheet}" ${c ? "" : "disabled"}>${esc(s.sheet)}<b>${c}</b></button>`;
+  }).join("");
+  for (const b of $("filter").children) b.setAttribute("aria-pressed", b.dataset.f === S.filter);
+  updatePos();
+}
+function updatePos(){
+  const v = visible(), i = v.findIndex(p => p.id === S.cur);
+  $("pos").textContent = v.length ? (i >= 0 ? `${i+1} / ${v.length}` : `${v.length} marks`) : "none";
+  $("prev").disabled = $("next").disabled = !v.length;
+}
+
+/* ---------- sheet + marks ---------- */
+const sheetOf = n => D.sheets.find(s => s.sheet === n);
+function loadSheet(){
+  const sh = sheetOf(S.sheet), img = $("img");
+  if (img.dataset.src !== sh.img){
+    $("loading").hidden = false; img.style.opacity = 0;
+    const done = () => { $("loading").hidden = true; img.style.opacity = 1; };
+    img.onload = done; img.onerror = () => { $("loading").textContent = "Sheet image missing: " + sh.img; };
+    img.src = sh.img; img.dataset.src = sh.img;
+    if (img.complete && img.naturalWidth) done();
+  }
+  img.style.width = sh.w + "px"; img.style.height = sh.h + "px";
+  const svg = $("svg"); svg.setAttribute("width", sh.w); svg.setAttribute("height", sh.h); svg.setAttribute("viewBox", `0 0 ${sh.w} ${sh.h}`);
+}
+function geom(p){
+  const sb = p.symbol_bbox, bb = p.body_bbox;
+  if (sb){ const cx = (sb[0]+sb[2])/2, cy = (sb[1]+sb[3])/2; return {cx, cy, r: Math.max(7, Math.max(sb[2]-sb[0], sb[3]-sb[1])/2 + 3)}; }
+  return {cx: p.x, cy: p.y, r: 9};
+}
+function drawMarks(){
+  $("svg").innerHTML = visible().map(p => {
+    const g = geom(p), rv = review[p.id];
+    const cls = `m ${p.confidence}${rv === "ok" ? " ok" : rv === "bad" ? " bad" : ""}${S.cur === p.id ? " cur" : ""}`;
+    const bb = p.body_bbox;
+    const box = bb ? `<rect class="bx" x="${bb[0]-1.5}" y="${bb[1]-1.5}" width="${bb[2]-bb[0]+3}" height="${bb[3]-bb[1]+3}"/>` : "";
+    const n = +p.id.split("-").pop();
+    return `<g class="${cls}" data-id="${p.id}">${S.cur === p.id ? `<circle class="halo" cx="${g.cx}" cy="${g.cy}" r="${g.r+6}"/>` : ""}${box}
+      <circle class="hit" cx="${g.cx}" cy="${g.cy}" r="${g.r+3}"/><circle class="r" cx="${g.cx}" cy="${g.cy}" r="${g.r}"/><circle class="dot" cx="${g.cx}" cy="${g.cy}" r="4"/>
+      <text x="${g.cx + g.r*0.75 + 1}" y="${g.cy - g.r*0.75 - 1}">${n}</text></g>`;
+  }).join("");
+}
+
+/* ---------- camera ---------- */
+function apply(anim){
+  const w = $("world");
+  w.classList.toggle("anim", !!anim);
+  w.style.transform = `translate(${S.tx}px,${S.ty}px) scale(${S.s})`;
+  w.style.setProperty("--inv", 1 / S.s);
+}
+function fit(anim){
+  const sh = sheetOf(S.sheet), r = $("stage").getBoundingClientRect();
+  S.s = Math.min(r.width / sh.w, r.height / sh.h) * 0.98;
+  S.tx = (r.width - sh.w * S.s) / 2; S.ty = (r.height - sh.h * S.s) / 2; apply(anim);
+}
+function zoomAt(k, mx, my, anim){
+  const ns = Math.min(10, Math.max(0.03, S.s * k));
+  S.tx = mx - (mx - S.tx) * ns / S.s; S.ty = my - (my - S.ty) * ns / S.s; S.s = ns; apply(anim);
+}
+function centreOn(x, y, minScale){
+  const r = $("stage").getBoundingClientRect();
+  S.s = Math.max(S.s, minScale); S.tx = r.width/2 - x*S.s; S.ty = r.height/2 - y*S.s; apply(true);
+}
+
+/* ---------- selection ---------- */
+function inspector(){
+  const p = byId.get(S.cur), el = $("insp");
+  if (!p){
+    const v = visible().length;
+    el.innerHTML = `<span class="why">${v} mark${v === 1 ? "" : "s"} on ${esc(S.sheet)}${S.type ? " for " + esc(S.type) : ""}. Click a mark or press → to step through them.</span>`;
+    return;
+  }
+  const rv = review[p.id];
+  el.innerHTML = `<span class="id">${esc(p.id)}</span><span class="pill ${p.confidence}">${p.confidence === "LOW" ? "check" : p.confidence.toLowerCase()}</span>
+    ${p.length_ft ? `<span class="len">${fmt(p.length_ft)} ft</span>` : ""}
+    <span class="why">${esc(p.sheet)} · ${p.tagged === false ? "untagged symbol" : "tagged"}${p.notes.length ? " · " + esc(p.notes.join("; ")) : ""}</span>
+    <button class="btn good" id="rok" aria-pressed="${rv === "ok"}">Correct</button>
+    <button class="btn badb" id="rbad" aria-pressed="${rv === "bad"}">Wrong</button>`;
+  $("rok").onclick = () => setReview("ok"); $("rbad").onclick = () => setReview("bad");
+}
+function select(id){
+  const p = byId.get(id); if (!p) return;
+  const sheetChanged = p.sheet !== S.sheet;
+  S.cur = id;
+  if (sheetChanged){ S.sheet = p.sheet; loadSheet(); sheetsBar(); }
+  drawMarks(); inspector(); updatePos();
+  const g = geom(p); centreOn(g.cx, g.cy, 3.2);
+}
+function step(d){
+  const v = visible(); if (!v.length) return;
+  let i = v.findIndex(p => p.id === S.cur);
+  i = i < 0 ? (d > 0 ? 0 : v.length - 1) : (i + d + v.length) % v.length;
+  select(v[i].id);
+}
+function setReview(v){
+  if (!S.cur) return;
+  if (review[S.cur] === v) delete review[S.cur]; else review[S.cur] = v;
+  store.set(RKEY, review); revNote(); drawMarks(); inspector();
+}
+function revNote(){ const v = Object.values(review); $("revnote").textContent = v.length ? `${v.filter(x => x === "ok").length} ✓ · ${v.filter(x => x === "bad").length} ✗` : ""; }
+
+function chooseType(m){
+  S.type = m || null; S.cur = null;
+  if (!countOn(S.sheet)){ const first = D.sheets.find(s => countOn(s.sheet)); if (first){ S.sheet = first.sheet; loadSheet(); } }
+  ledger(); sheetsBar(); drawMarks(); inspector(); fit(true);
+}
+
+/* ---------- input ---------- */
+(function(){
+  const st = $("stage"), pts = new Map(); let start = null, moved = false, pinch = null, wheelRaf = 0, wheelK = 1, wheelAt = null;
+  st.addEventListener("wheel", e => {
+    e.preventDefault();
+    const r = st.getBoundingClientRect(); wheelAt = [e.clientX - r.left, e.clientY - r.top];
+    wheelK *= Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018));
+    if (!wheelRaf) wheelRaf = requestAnimationFrame(() => { zoomAt(wheelK, wheelAt[0], wheelAt[1], false); wheelK = 1; wheelRaf = 0; });
+  }, {passive:false});
+  st.addEventListener("pointerdown", e => {
+    if (e.target.closest(".zoomer")) return;
+    pts.set(e.pointerId, [e.clientX, e.clientY]); st.setPointerCapture(e.pointerId);
+    if (pts.size === 1){ start = {x:e.clientX, y:e.clientY, tx:S.tx, ty:S.ty}; moved = false; st.classList.add("drag"); }
+    if (pts.size === 2){ const [a,b] = [...pts.values()]; pinch = {d: Math.hypot(a[0]-b[0], a[1]-b[1]), s: S.s}; }
+  });
+  st.addEventListener("pointermove", e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, [e.clientX, e.clientY]);
+    const r = st.getBoundingClientRect();
+    if (pts.size === 2 && pinch){
+      const [a,b] = [...pts.values()], d = Math.hypot(a[0]-b[0], a[1]-b[1]);
+      zoomAt(pinch.s * d / pinch.d / S.s, (a[0]+b[0])/2 - r.left, (a[1]+b[1])/2 - r.top, false); moved = true; return;
+    }
+    if (!start) return;
+    const dx = e.clientX - start.x, dy = e.clientY - start.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+    S.tx = start.tx + dx; S.ty = start.ty + dy; apply(false);
+  });
+  const up = e => {
+    const tap = !moved && pts.size === 1;
+    pts.delete(e.pointerId); if (pts.size < 2) pinch = null;
+    if (!pts.size){ st.classList.remove("drag"); start = null; }
+    if (tap){
+      const hit = document.elementsFromPoint(e.clientX, e.clientY).find(el => el.closest && el.closest(".m"));
+      if (hit) select(hit.closest(".m").dataset.id);
+    }
+  };
+  st.addEventListener("pointerup", up); st.addEventListener("pointercancel", up);
+  st.addEventListener("dblclick", e => { const r = st.getBoundingClientRect(); zoomAt(2, e.clientX - r.left, e.clientY - r.top, true); });
+})();
+
+$("zin").onclick = () => { const r = $("stage").getBoundingClientRect(); zoomAt(1.6, r.width/2, r.height/2, true); };
+$("zout").onclick = () => { const r = $("stage").getBoundingClientRect(); zoomAt(1/1.6, r.width/2, r.height/2, true); };
+$("zfit").onclick = () => fit(true);
+$("prev").onclick = () => step(-1); $("next").onclick = () => step(1);
+$("list").addEventListener("click", e => { const r = e.target.closest(".row"); if (r) chooseType(r.dataset.m); });
+$("sheets").addEventListener("click", e => { const b = e.target.closest(".sh"); if (b && !b.disabled){ S.sheet = b.dataset.s; S.cur = null; loadSheet(); sheetsBar(); drawMarks(); inspector(); fit(false); } });
+$("filter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.filter = b.dataset.f; S.cur = null;
+  if (!countOn(S.sheet)){ const f = D.sheets.find(s => countOn(s.sheet)); if (f){ S.sheet = f.sheet; loadSheet(); fit(false); } }
+  sheetsBar(); drawMarks(); inspector(); });
+$("q").addEventListener("input", ledger);
+for (const [id, t] of [["t-fix","fix"],["t-der","der"],["t-not","not"]]) $(id).onclick = () => { S.tab = t; for (const x of ["t-fix","t-der","t-not"]) $(x).setAttribute("aria-selected", x === id); ledger(); };
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  const k = e.key.toLowerCase();
+  if (k === "arrowright" || k === "j"){ e.preventDefault(); step(1); }
+  else if (k === "arrowleft" || k === "k"){ e.preventDefault(); step(-1); }
+  else if (k === "c") setReview("ok");
+  else if (k === "w") setReview("bad");
+  else if (k === "f") fit(true);
+  else if (k === "escape"){ S.cur = null; drawMarks(); inspector(); updatePos(); }
+});
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => S.cur ? select(S.cur) : fit(false), 120); });
+
+async function copy(text, what){
+  try { await navigator.clipboard.writeText(text); toast(what + " copied"); }
+  catch(e){ const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select();
+    try { document.execCommand("copy"); toast(what + " copied"); } catch(_) { toast("Copy blocked by the browser"); } t.remove(); }
+}
+function toast(t){ const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(e._t); e._t = setTimeout(() => e.hidden = true, 1600); }
+$("copycsv").onclick = () => copy(["Type,Measured as,Qty each,Length ft,High,Medium,Check,Description"].concat(D.boq.map(r =>
+  [r.mark, r.measure, r.count, r.length_ft ?? "", r.high, r.medium, r.low, '"' + r.description.replace(/"/g,'""') + '"'].join(","))).join("\n"), "BOQ CSV");
+$("copyrev").onclick = () => copy(JSON.stringify(review, null, 1), "Review");
+
+S.sheet = D.sheets[0].sheet;
+header(); ledger(); loadSheet(); sheetsBar(); drawMarks(); inspector(); revNote();
+requestAnimationFrame(() => fit(false));
+</script>
